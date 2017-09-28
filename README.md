@@ -1,6 +1,6 @@
 # silverstripe-freshdesk
 
-SilverStripe module which allows CMS admins to configure userforms to raise tickets with freshdesk,
+SilverStripe module which allows CMS admins to configure userforms to raise tickets with freshdesk.
 
 ## Configuration
 

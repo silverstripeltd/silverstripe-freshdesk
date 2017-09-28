@@ -13,3 +13,6 @@ UserDefinedForm:
 Injector:
   FreshdeskClient:
     factory: 'ClientFactory'
+Director:
+  rules:
+    'freshdesksso': FreshdeskSSO
