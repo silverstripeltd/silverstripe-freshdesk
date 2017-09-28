@@ -1,0 +1,12 @@
+{
+    "name": "jakedaleweb/deploynaut-freshdesk",
+    "description": "Additional feature for userdefined forms to raise freshdesk tickets",
+    "type": "silverstripe-module",
+    "require": {
+        "guzzlehttp/guzzle": "~6.0",
+        "silverstripe/userforms": "^4.5"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2.0"
+    }
+}

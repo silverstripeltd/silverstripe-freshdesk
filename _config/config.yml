@@ -1,0 +1,12 @@
+---
+Name: freshdesk
+After:
+  - 'framework/*'
+  - 'cms/*'
+---
+UserDefinedForm_Controller:
+  extensions:
+    - UserDefinedForm_ControllerFreshdeskExtension
+UserDefinedForm:
+  extensions:
+    - UserDefinedFormFreshdeskExtension
