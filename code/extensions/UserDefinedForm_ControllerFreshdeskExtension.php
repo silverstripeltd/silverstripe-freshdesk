@@ -1,10 +1,5 @@
 <?php
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Exception\RequestException;
-
 Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 {
     public function updateEmailData($emailData, $attachments)
@@ -29,20 +24,7 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
         ];
 
         $headers = ["Content-type" => "application/json"];
-
-        $client = new Client([
-            'auth' => [FRESHDESK_API_TOKEN, FRESHDESK_PASSWORD],
-        ]);
-
-        $request = new Request('POST', 'https://'.$this->owner->FreshdeskDomain.'/api/v2/tickets', $headers);
-
-        try {
-            $response = $client->send($request, ['json' => $ticketData]);
-        } catch (RequestException $e) {
-            echo Psr7\str($e->getRequest());
-            if ($e->hasResponse()) {
-                SS_Log::log(Psr7\str($e->getResponse()), SS_Log::ERR);
-            }
-        }
+        $freshdesk = new Freshdesk();
+        $freshdesk->APICall($ticketData, $headers, 'POST', $this->owner->FreshdeskDomain, '/api/v2/tickets');
     }
 }
