@@ -26,7 +26,7 @@ class FreshdeskPage_Controller extends Page_Controller
         4 => 'Urgent',
     ];
 
-    /* 
+    /*
      *
      * Valid filters: cc_emails, fwd_emails, reply_cc_emails, fr_escalated, spam, email_config_id
      *     group_id, priority, source, company_id, status, subject, to_emails, product_id, id
@@ -34,8 +34,9 @@ class FreshdeskPage_Controller extends Page_Controller
      *
      */
 
-    public function getFreshdeskTickets($filter = [])  
+    public function getFreshdeskTickets($filter = [])
     {
+
         $currentMember = \Member::currentUser();
         if (!$currentMember || !$currentMember->exists()) {
             return \Security::permissionFailure();
@@ -49,7 +50,7 @@ class FreshdeskPage_Controller extends Page_Controller
         ]);
 
         $res = $client->request('GET', '/api/v2/tickets?email='.urlencode($currentMember->Email), $headers);
-        
+
         if ($res->getStatusCode() == '200') {
             $tickets = json_decode($res->getBody()->getContents(), true);
         }
@@ -58,35 +59,48 @@ class FreshdeskPage_Controller extends Page_Controller
             return false;
         }
 
-        $tickets = $this->applyFreshdeskFilter($tickets, FRESHDESK_PRODUCT_ID, $filter);
+        if (defined("FRESHDESK_PRODUCT_ID")) {
+            $productID = FRESHDESK_PRODUCT_ID;
+        } else {
+            $productID = false;
+        }
+
+        $tickets = $this->freshdeskFilter($tickets, $productID, $filter);
 
         return new ArrayList($tickets);
     }
 
-    private function applyFreshdeskFilter($tickets, $productID = false, $filter = [])
+    private function freshdeskFilter($tickets, $productID = false, $filter = [])
     {
-
         foreach ($tickets as $key=>$ticket) {
 
-            if ($ticket['product_id'] != $productID) {
+            if ($productID && $ticket['product_id'] != $productID) {
                 unset($tickets[$key]);
                 continue;
             }
 
             if (empty($filter) || count($filter) == 0) {
-                continue;            
+                continue;
             }
 
-            foreach ($filters as $filter=>$value) {
-                if (array_key_exists($filter, $ticket)) {
-                    if ($ticket[$filter] == $value) {
-                        continue;
-                    }
-                    unset($tickets[$key]);
-                }
+            if (!array_map('doFilters', $ticket, $filters)) {
+                unset($tickets[$key]);
             }
+
         }
-        
         return $tickets;
     }
+
+    private function doFilters($ticket, $filters)
+    {
+        $hasFilter = false;
+
+        foreach ($filters as $filter=>$value) {
+            if ($ticket[$filter] == $value) {
+                return true;
+            }
+        }
+        return $hasFilter;
+    }
+
 }
