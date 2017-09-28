@@ -10,3 +10,6 @@ UserDefinedForm_Controller:
 UserDefinedForm:
   extensions:
     - UserDefinedFormFreshdeskExtension
+Injector:
+  FreshdeskClient:
+    factory: 'ClientFactory'
