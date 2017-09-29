@@ -20,10 +20,10 @@ class Freshdesk extends \Object
     /**
     * Generic method to handle requests to the Freshdesk API
     *
-    * @param Array $data, Array $headers, String $method, String $url, String $action
+    * @param String $method, String $url, String $action, Array $headers, Array $data
     * @return $response || false
     */
-    public function APICall($data, $headers, $method, $url, $action)
+    public function APICall($method, $url, $action, $headers, $data = [])
     {
         $request = new Request($method, 'https://'.$url.$action, $headers);
 

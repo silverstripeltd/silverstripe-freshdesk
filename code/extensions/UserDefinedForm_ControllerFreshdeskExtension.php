@@ -29,6 +29,6 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 
         $headers = ["Content-type" => "application/json"];
         $freshdesk = Freshdesk::create();
-        $freshdesk->APICall($ticketData, $headers, 'POST', $this->owner->FreshdeskDomain, '/api/v2/tickets');
+        $freshdesk->APICall('POST', $this->owner->FreshdeskDomain, '/api/v2/tickets', $headers, $ticketData);
     }
 }
