@@ -48,7 +48,7 @@ class FreshdeskPage_Controller extends Page_Controller
         }
 
         $headers = ["Content-type" => "application/json"];
-        $freshdesk = \Freshdesk::create();
+        $freshdesk = \FreshdeskAPI::create();
         $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/tickets?email='.urlencode($currentMember->Email), $headers);
 
         if ($result->getStatusCode() == '200') {

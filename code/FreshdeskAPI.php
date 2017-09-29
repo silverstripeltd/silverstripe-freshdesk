@@ -6,7 +6,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\str;
 use GuzzleHttp\Exception\RequestException;
 
-class Freshdesk extends \Object
+class FreshdeskAPI extends \Object
 {
     /**
      * This is used by the SilverStripe Injector to instantiate an object as $this->client. See _config/config.yml.
