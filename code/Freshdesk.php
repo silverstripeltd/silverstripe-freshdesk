@@ -21,7 +21,7 @@ class Freshdesk extends \Object
     * Generic method to handle requests to the Freshdesk API
     *
     * @param Array $data, Array $headers, String $method, String $url, String $action
-    * @return Boolean
+    * @return $response || false
     */
     public function APICall($data, $headers, $method, $url, $action)
     {
@@ -33,8 +33,8 @@ class Freshdesk extends \Object
             if ($e->hasResponse()) {
                 SS_Log::log(str($e->getResponse()), SS_Log::ERR);
             }
-            return false;
+            $response = false;
         }
-        return true;
+        return $response;
     }
 }

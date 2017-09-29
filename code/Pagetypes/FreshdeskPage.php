@@ -36,20 +36,16 @@ class FreshdeskPage_Controller extends Page_Controller
 
     public function getFreshdeskTickets($filter = [])
     {
-
         $currentMember = \Member::currentUser();
         if (!$currentMember || !$currentMember->exists()) {
             return \Security::permissionFailure();
         }
 
         $headers = ["Content-type" => "application/json"];
+        $url = FRESHDESK_API_BASEURL.'/api/v2/tickets?email='.urlencode($currentMember->Email);
 
-        $client = new Client([
-            'base_uri' => 'https://'.FRESHDESK_API_BASEURL,
-            'auth' => [FRESHDESK_API_TOKEN, FRESHDESK_PASSWORD],
-        ]);
-
-        $res = $client->request('GET', '/api/v2/tickets?email='.urlencode($currentMember->Email), $headers);
+        $freshdesk = \Freshdesk::create();
+        $res = $freshdesk->APICall('', $headers, 'GET', $url, '');
 
         if ($res->getStatusCode() == '200') {
             $tickets = json_decode($res->getBody()->getContents(), true);
