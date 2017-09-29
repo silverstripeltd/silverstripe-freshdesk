@@ -23,6 +23,10 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
           "status" => 2,
         ];
 
+        if (defined("FRESHDESK_PRODUCT_ID")) {
+            $ticketData['product_id'] = FRESHDESK_PRODUCT_ID;
+        }
+
         $headers = ["Content-type" => "application/json"];
         $freshdesk = new Freshdesk();
         $freshdesk->APICall($ticketData, $headers, 'POST', $this->owner->FreshdeskDomain, '/api/v2/tickets');
