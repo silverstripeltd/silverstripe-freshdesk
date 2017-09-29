@@ -12,6 +12,9 @@ class FreshdeskPage extends Page
 
 class FreshdeskPage_Controller extends Page_Controller
 {
+    /**
+    * Status mapping for Freshdesk tickets
+    */
     private static $freshdeskStatus = [
         2 => 'Open',
         3 => 'Pending',
@@ -19,6 +22,9 @@ class FreshdeskPage_Controller extends Page_Controller
         5 => 'Closed',
     ];
 
+    /**
+    * Priority mapping for Freshdesk tickets
+    */
     private static $freshdeskPriority = [
         1 => 'Low',
         2 => 'Medium',
@@ -27,13 +33,13 @@ class FreshdeskPage_Controller extends Page_Controller
     ];
 
     /*
-     *
-     * Valid filters: cc_emails, fwd_emails, reply_cc_emails, fr_escalated, spam, email_config_id
-     *     group_id, priority, source, company_id, status, subject, to_emails, product_id, id
-     *     type, due_by, fr_due_by, is_escalated, description
-     *
-     */
-
+    * Returns Freshdesk tickets for a user
+    * Valid filters: cc_emails, fwd_emails, reply_cc_emails, fr_escalated, spam, email_config_id, group_id, priority, source, company_id, status, subject, to_emails, product_id, id type, due_by, fr_due_by, is_escalated, description
+    *
+    * @param Array $filter
+    * @return ArrayList $tickets
+    *
+    */
     public function getFreshdeskTickets($filter = [])
     {
         $currentMember = \Member::currentUser();
@@ -42,33 +48,41 @@ class FreshdeskPage_Controller extends Page_Controller
         }
 
         $headers = ["Content-type" => "application/json"];
-
         $freshdesk = \Freshdesk::create();
-        $res = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/tickets?email='.urlencode($currentMember->Email), $headers);
+        $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/tickets?email='.urlencode($currentMember->Email), $headers);
 
-        if ($res->getStatusCode() == '200') {
-            $tickets = json_decode($res->getBody()->getContents(), true);
+        if ($result->getStatusCode() == '200') {
+            $tickets = json_decode($result->getBody()->getContents(), true);
         }
 
         if (empty($tickets) || count($tickets) == 0) {
             return false;
         }
 
+        $productID = false;
         if (defined("FRESHDESK_PRODUCT_ID")) {
             $productID = FRESHDESK_PRODUCT_ID;
-        } else {
-            $productID = false;
         }
 
-        $tickets = $this->freshdeskFilter($tickets, $productID, $filter);
+        $tickets = $this->freshdeskTicketFilter($tickets, $productID, $filter);
 
         return new ArrayList($tickets);
     }
 
-    private function freshdeskFilter($tickets, $productID = false, $filter = [])
+    /**
+    * Filters tickets for a user based on product ID or other filter
+    *
+    * @param Array $tickets, String $productID, Array $filter
+    * @return Array $tickets
+    */
+    private function freshdeskTicketFilter($tickets, $productID = false, $filter = [])
     {
-        foreach ($tickets as $key=>$ticket) {
+        // fast return if nothing to filter on
+        if (!$productID && !$filter) {
+            return $tickets;
+        }
 
+        foreach ($tickets as $key => $ticket) {
             if ($productID && $ticket['product_id'] != $productID) {
                 unset($tickets[$key]);
                 continue;
@@ -78,24 +92,20 @@ class FreshdeskPage_Controller extends Page_Controller
                 continue;
             }
 
-            if (!array_map('doFilters', $ticket, $filters)) {
+            if (!array_map('doFilter', $ticket, $filters)) {
                 unset($tickets[$key]);
             }
-
         }
         return $tickets;
     }
 
-    private function doFilters($ticket, $filters)
+    private function doFilter($ticket, $filters)
     {
-        $hasFilter = false;
-
-        foreach ($filters as $filter=>$value) {
+        foreach ($filters as $filter => $value) {
             if ($ticket[$filter] == $value) {
                 return true;
             }
         }
-        return $hasFilter;
+        return false;
     }
-
 }
