@@ -1,13 +1,14 @@
 <?php
 
-class FreshdeskSSO extends Controller 
+class FreshdeskSSO extends Controller
 {
 
     public static $allowed_actions = [
         'simple',
     ];
 
-    public function simple() {
+    public function simple()
+    {
         $currentMember = \Member::currentUser();
         if (!$currentMember || !$currentMember->exists()) {
             return \Security::permissionFailure();
@@ -23,7 +24,8 @@ class FreshdeskSSO extends Controller
         $this->redirect($this->getSSOUrl($currentMember->getName(),$currentMember->Email));
     }
 
-    private function getSSOUrl($strName, $strEmail) {
+    private function getSSOUrl($strName, $strEmail)
+    {
         $timestamp = time();
         $to_be_hashed = $strName . FRESHDESK_HMAC_SECRET . $strEmail . $timestamp;
         $hash = hash_hmac('md5', $to_be_hashed, FRESHDESK_HMAC_SECRET);
