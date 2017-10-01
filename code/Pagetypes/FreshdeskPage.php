@@ -77,6 +77,7 @@ class FreshdeskPage_Controller extends Page_Controller
     */
     private function freshdeskTicketFilter($tickets, $productID = false, $filter = [])
     {
+        $tickets = $this->humanReadable($tickets);
         // fast return if nothing to filter on
         if (!$productID && !$filter) {
             return $tickets;
@@ -107,5 +108,18 @@ class FreshdeskPage_Controller extends Page_Controller
             }
         }
         return false;
+    }
+
+    private function humanReadable($tickets)
+    {
+        $priorities = self::$freshdeskPriority;
+        $statuses = self::$freshdeskStatus;
+        $formattedTickets = [];
+        foreach ($tickets as $ticket) {
+            $ticket['priority'] = $priorities[$ticket['priority']];
+            $ticket['status'] = $statuses[$ticket['status']];
+            $formattedTickets[] = $ticket;
+        }
+        return $formattedTickets;
     }
 }
