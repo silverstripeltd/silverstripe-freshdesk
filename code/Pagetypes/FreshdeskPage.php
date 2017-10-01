@@ -65,8 +65,8 @@ class FreshdeskPage_Controller extends Page_Controller
         }
 
         $tickets = $this->freshdeskTicketFilter($tickets, $productID, $filter);
-
-        return new ArrayList($tickets);
+        $tickets = new ArrayList($tickets);
+        return new PaginatedList($tickets, $this->request);
     }
 
     /**
