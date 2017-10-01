@@ -4,7 +4,12 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 {
     public function updateEmailData($emailData, $attachments)
     {
-        if (!$this->owner->ExportToFreshdesk || !defined('FRESHDESK_API_BASEURL') || empty('FRESHDESK_API_BASEURL')) {
+        if (!$this->owner->ExportToFreshdesk) {
+            return false;
+        }
+
+        if (!defined('FRESHDESK_API_BASEURL') || empty('FRESHDESK_API_BASEURL')) {
+            SS_Log::log("Ticket is intended to be exported to Freshdesk but FRESHDESK_API_BASEURL is not defined", SS_Log::ERR);
             return false;
         }
 
