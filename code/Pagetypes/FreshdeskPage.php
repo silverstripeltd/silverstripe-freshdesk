@@ -37,7 +37,7 @@ class FreshdeskPage_Controller extends Page_Controller
     * Valid filters: cc_emails, fwd_emails, reply_cc_emails, fr_escalated, spam, email_config_id, group_id, priority, source, company_id, status, subject, to_emails, product_id, id type, due_by, fr_due_by, is_escalated, description
     *
     * @param Array $filter
-    * @return ArrayList $tickets
+    * @return PaginatedList
     *
     */
     public function getFreshdeskTickets($filter = [])
@@ -110,6 +110,12 @@ class FreshdeskPage_Controller extends Page_Controller
         return false;
     }
 
+    /**
+    * Converts the numeric values in a ticket to something that makes sense to a human. Mappings defined as statics on this class
+    *
+    * @param Array $tickets
+    * @return Array $formattedTickets
+    */
     private function humanReadable($tickets)
     {
         $priorities = self::$freshdeskPriority;
