@@ -4,7 +4,7 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 {
     public function updateEmailData($emailData, $attachments)
     {
-        if (!$this->owner->FreshdeskDomain || !$this->owner->ExportToFreshdesk) {
+        if (!$this->owner->ExportToFreshdesk || !defined('FRESHDESK_API_BASEURL') || empty('FRESHDESK_API_BASEURL')) {
             return false;
         }
 
@@ -15,20 +15,22 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
             $formattedData .= "<br>";
         }
 
+        $productID = null;
+        if (defined("FRESHDESK_PRODUCT_ID")) {
+            $productID = FRESHDESK_PRODUCT_ID;
+        }
+
         $ticketData = [
           "description" => $formattedData,
           "subject" => "[".$this->owner->Title."]",
           "email" => $emailData['Sender']->Email,
           "priority" => 2,
           "status" => 2,
+          "product_id" => $productID,
         ];
-
-        if (defined("FRESHDESK_PRODUCT_ID")) {
-            $ticketData['product_id'] = FRESHDESK_PRODUCT_ID;
-        }
 
         $headers = ["Content-type" => "application/json"];
         $freshdesk = FreshdeskAPI::create();
-        $freshdesk->APICall('POST', $this->owner->FreshdeskDomain, '/api/v2/tickets', $headers, $ticketData);
+        $freshdesk->APICall('POST', FRESHDESK_API_BASEURL, '/api/v2/tickets', $headers, $ticketData);
     }
 }
