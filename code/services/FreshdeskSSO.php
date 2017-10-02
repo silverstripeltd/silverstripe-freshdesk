@@ -16,8 +16,7 @@ class FreshdeskSSO extends Controller
 
         // Route different Portals - single instance of Freshdesk
         $portalUrl = $this->request->getVar('host_url');
-        if ($portalUrl != 'cwptest.silverstripe.com')
-        {
+        if ($portalUrl != 'cwptest.silverstripe.com') {
             $this->redirect('https://silverstripesupport.freshdesk.com/login/normal');
         }
 
@@ -27,8 +26,8 @@ class FreshdeskSSO extends Controller
     private function getSSOUrl($strName, $strEmail)
     {
         $timestamp = time();
-        $to_be_hashed = $strName . FRESHDESK_HMAC_SECRET . $strEmail . $timestamp;
-        $hash = hash_hmac('md5', $to_be_hashed, FRESHDESK_HMAC_SECRET);
+        $toBeHashed = $strName . FRESHDESK_HMAC_SECRET . $strEmail . $timestamp;
+        $hash = hash_hmac('md5', $toBeHashed, FRESHDESK_HMAC_SECRET);
         return 'http://'.FRESHDESK_PORTAL_BASEURL.'/login/sso/?name='.urlencode($strName).'&email='.urlencode($strEmail).'&timestamp='.$timestamp.'&hash='.$hash;
     }
 
