@@ -12,7 +12,7 @@ UserDefinedForm:
     - UserDefinedFormFreshdeskExtension
 Injector:
   FreshdeskClient:
-    factory: 'ClientFactory'
+    factory: 'FreshdeskClientFactory'
 Director:
   rules:
     'freshdesksso': FreshdeskSSO

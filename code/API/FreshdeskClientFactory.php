@@ -7,7 +7,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use SilverStripe\Framework\Injector\Factory;
 
-class ClientFactory implements Factory
+class FreshdeskClientFactory implements Factory
 {
     const maxRetries = 5;
     public function create($service, array $params = [])

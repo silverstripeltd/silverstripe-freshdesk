@@ -176,7 +176,6 @@ class FreshdeskPage_Controller extends Page_Controller
     public function filterForm()
     {
         $statuses = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskStatus');
-        $statuses[0] = "any";
         $currentStatus = 2;
         if ($this->request->getVar('status') && $this->request->getVar('status') != null) {
             $currentStatus = $this->request->getVar('status');
@@ -195,7 +194,7 @@ class FreshdeskPage_Controller extends Page_Controller
         );
 
         $actions = new FieldList(
-            FormAction::create('Filter', '')
+            FormAction::create('Filter', '')->setFullAction('Filter')
         );
 
         $form = new Form($this, '', $fields, $actions);
