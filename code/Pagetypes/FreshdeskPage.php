@@ -134,8 +134,8 @@ class FreshdeskPage_Controller extends Page_Controller
     */
     private function humanReadable($tickets)
     {
-        $priorities = self::$freshdeskPriority;
-        $statuses = self::$freshdeskStatus;
+        $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
+        $statuses = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskStatus');
         $formattedTickets = [];
         foreach ($tickets as $ticket) {
             $ticket['priority'] = $priorities[$ticket['priority']];
