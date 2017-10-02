@@ -74,6 +74,7 @@ class FreshdeskPage_Controller extends Page_Controller
         }
 
         $tickets = $this->getTickets($currentMember);
+
         if (empty($tickets) || count($tickets) == 0) {
             return false;
         }
