@@ -14,6 +14,7 @@ class FreshdeskPage_Controller extends Page_Controller
 {
     /**
     * Status mapping for Freshdesk tickets
+    * @var Array
     */
     private static $freshdeskStatus = [
         2 => 'open',
@@ -24,6 +25,7 @@ class FreshdeskPage_Controller extends Page_Controller
 
     /**
     * Priority mapping for Freshdesk tickets
+    * @var Array
     */
     private static $freshdeskPriority = [
         1 => 'low',
@@ -31,6 +33,31 @@ class FreshdeskPage_Controller extends Page_Controller
         3 => 'high',
         4 => 'urgent',
     ];
+
+    /**
+    * @var Array
+    */
+    private static $_tickets = [];
+
+    /**
+    * Get tickets from in memory cache, otherwise put them there
+    *
+    * @return Array $_tickets
+    */
+    private function getTickets($currentMember)
+    {
+        if (!self::$_tickets) {
+            $headers = ["Content-type" => "application/json"];
+            $freshdesk = \FreshdeskAPI::create();
+            $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/tickets?email='.urlencode($currentMember->Email), $headers);
+
+            if ($result->getStatusCode() == '200') {
+                $tickets = json_decode($result->getBody()->getContents(), true);
+            }
+            self::$_tickets = $tickets;
+        }
+        return self::$_tickets;
+    }
 
     /*
     * Returns Freshdesk tickets for a user can be filtered by priority or status
@@ -46,14 +73,7 @@ class FreshdeskPage_Controller extends Page_Controller
             return \Security::permissionFailure();
         }
 
-        $headers = ["Content-type" => "application/json"];
-        $freshdesk = \FreshdeskAPI::create();
-        $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/tickets?email='.urlencode($currentMember->Email), $headers);
-
-        if ($result->getStatusCode() == '200') {
-            $tickets = json_decode($result->getBody()->getContents(), true);
-        }
-
+        $tickets = $this->getTickets($currentMember);
         if (empty($tickets) || count($tickets) == 0) {
             return false;
         }
@@ -198,7 +218,7 @@ class FreshdeskPage_Controller extends Page_Controller
         );
 
         $form = new Form($this, '', $fields, $actions);
-        $form->setTemplate('filterForm');
+        $form->setTemplate('FilterForm');
         $form->setFormMethod('get');
 
         return $form;
