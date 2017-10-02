@@ -33,14 +33,13 @@ class FreshdeskPage_Controller extends Page_Controller
     ];
 
     /*
-    * Returns Freshdesk tickets for a user
-    * Valid filters: cc_emails, fwd_emails, reply_cc_emails, fr_escalated, spam, email_config_id, group_id, priority, source, company_id, status, subject, to_emails, product_id, id type, due_by, fr_due_by, is_escalated, description
+    * Returns Freshdesk tickets for a user can be filtered by priority or status
     *
     * @param Array $filter
     * @return PaginatedList
     *
     */
-    public function getFreshdeskTickets($filter = [])
+    public function getFreshdeskTickets()
     {
         $currentMember = \Member::currentUser();
         if (!$currentMember || !$currentMember->exists()) {
@@ -64,6 +63,17 @@ class FreshdeskPage_Controller extends Page_Controller
             $productID = FRESHDESK_PRODUCT_ID;
         }
 
+        // Get all open by default
+        $filter = ['status' => 'open'];
+        if ($this->request->getVar('status')) {
+            $filter['status'] = $this->request->getVar('status');
+        }
+        if ($this->request->getVar('priority')) {
+            $filter['priority'] = $this->request->getVar('priority');
+        }
+        $filter = $this->validateFilter($filter);
+
+        $tickets = $this->humanReadable($tickets);
         $tickets = $this->freshdeskTicketFilter($tickets, $productID, $filter);
         $tickets = new ArrayList($tickets);
         return new PaginatedList($tickets, $this->request);
@@ -75,16 +85,15 @@ class FreshdeskPage_Controller extends Page_Controller
     * @param Array $tickets, String $productID, Array $filter
     * @return Array $tickets
     */
-    private function freshdeskTicketFilter($tickets, $productID = false, $filter = [])
+    private function freshdeskTicketFilter($tickets, $productID = false, $filter)
     {
-        $tickets = $this->humanReadable($tickets);
         // fast return if nothing to filter on
         if (!$productID && !$filter) {
             return $tickets;
         }
 
-        foreach ($tickets as $key => $ticket) {
-            if ($productID && $ticket['product_id'] != $productID) {
+        foreach ($tickets as $key => $val) {
+            if ($productID && $val['product_id'] != $productID) {
                 unset($tickets[$key]);
                 continue;
             }
@@ -93,21 +102,28 @@ class FreshdeskPage_Controller extends Page_Controller
                 continue;
             }
 
-            if (!array_map('doFilter', $ticket, $filters)) {
-                unset($tickets[$key]);
+            foreach ($filter as $filterKey => $filterVal) {
+                $doFilter = $this->doFilter($val, $filterKey, $filterVal);
+                if ($doFilter) {
+                    unset($tickets[$key]);
+                }
             }
         }
         return $tickets;
     }
 
-    private function doFilter($ticket, $filters)
+    /**
+    * Return true or false, depending on if a ticket should be removed based on a match to a filter
+    *
+    * @param Array $ticket, String $filterKey, String $filterVal
+    * @return Boolean
+    */
+    private function doFilter($ticket, $filterKey, $filterVal)
     {
-        foreach ($filters as $filter => $value) {
-            if ($ticket[$filter] == $value) {
-                return true;
-            }
+        if (strcasecmp($ticket[$filterKey], $filterVal) == 0) {
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
