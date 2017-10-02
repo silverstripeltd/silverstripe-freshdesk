@@ -16,20 +16,20 @@ class FreshdeskPage_Controller extends Page_Controller
     * Status mapping for Freshdesk tickets
     */
     private static $freshdeskStatus = [
-        2 => 'Open',
-        3 => 'Pending',
-        4 => 'Resolved',
-        5 => 'Closed',
+        2 => 'open',
+        3 => 'pending',
+        4 => 'resolved',
+        5 => 'closed',
     ];
 
     /**
     * Priority mapping for Freshdesk tickets
     */
     private static $freshdeskPriority = [
-        1 => 'Low',
-        2 => 'Medium',
-        3 => 'High',
-        4 => 'Urgent',
+        1 => 'low',
+        2 => 'medium',
+        3 => 'high',
+        4 => 'urgent',
     ];
 
     /*
@@ -64,7 +64,7 @@ class FreshdeskPage_Controller extends Page_Controller
         }
 
         // Get all open by default
-        $filter = ['status' => 'open'];
+        $filter = ['status' => 2];
         if ($this->request->getVar('status')) {
             $filter['status'] = $this->request->getVar('status');
         }
@@ -73,8 +73,8 @@ class FreshdeskPage_Controller extends Page_Controller
         }
         $filter = $this->validateFilter($filter);
 
-        $tickets = $this->humanReadable($tickets);
         $tickets = $this->freshdeskTicketFilter($tickets, $productID, $filter);
+        $tickets = $this->humanReadable($tickets);
         $tickets = new ArrayList($tickets);
         return new PaginatedList($tickets, $this->request);
     }
@@ -120,7 +120,7 @@ class FreshdeskPage_Controller extends Page_Controller
     */
     private function doFilter($ticket, $filterKey, $filterVal)
     {
-        if (strcasecmp($ticket[$filterKey], $filterVal) == 0) {
+        if ($ticket[$filterKey] == (int) $filterVal) {
             return false;
         }
         return true;
@@ -143,5 +143,65 @@ class FreshdeskPage_Controller extends Page_Controller
             $formattedTickets[] = $ticket;
         }
         return $formattedTickets;
+    }
+
+    /**
+    * Ensures filter only contains allowed statuses and priorities. If unallowed it is unset
+    *
+    * @param Array $filter
+    * @return Array $filter
+    */
+    private function validateFilter($filter)
+    {
+        $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
+        if (isset($filter['priority'])) {
+            if (!in_array($filter['priority'], array_keys($priorities))) {
+                unset($filter['priority']);
+            }
+        }
+
+        $statuses = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskStatus');
+        if (!in_array($filter['status'], array_keys($statuses))) {
+            unset($filter['status']);
+        }
+
+        return $filter;
+    }
+
+    /**
+    * Renders a form which can be used for filtering the tickets via template
+    *
+    * @return Form $form
+    */
+    public function filterForm()
+    {
+        $statuses = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskStatus');
+        $statuses[0] = "any";
+        $currentStatus = 2;
+        if ($this->request->getVar('status') && $this->request->getVar('status') != null) {
+            $currentStatus = $this->request->getVar('status');
+        }
+
+        $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
+        $priorities[0] = "any";
+        $currentPriority = 0;
+        if ($this->request->getVar('priority') && $this->request->getVar('priority') != null) {
+            $currentPriority = $this->request->getVar('priority');
+        }
+
+        $fields = new FieldList(
+            DropdownField::create('status', 'status', $statuses, $currentStatus),
+            DropdownField::create('priority', 'priority', $priorities, $currentPriority)
+        );
+
+        $actions = new FieldList(
+            FormAction::create('Filter', '')
+        );
+
+        $form = new Form($this, '', $fields, $actions);
+        $form->setTemplate('filterForm');
+        $form->setFormMethod('get');
+
+        return $form;
     }
 }
