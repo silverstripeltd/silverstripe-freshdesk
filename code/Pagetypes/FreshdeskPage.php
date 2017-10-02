@@ -15,6 +15,7 @@ class FreshdeskPage_Controller extends Page_Controller
     /**
     * Status mapping for Freshdesk tickets
     * @var Array
+    * @config
     */
     private static $freshdeskStatus = [
         2 => 'open',
@@ -26,6 +27,7 @@ class FreshdeskPage_Controller extends Page_Controller
     /**
     * Priority mapping for Freshdesk tickets
     * @var Array
+    * @config
     */
     private static $freshdeskPriority = [
         1 => 'low',
