@@ -217,7 +217,7 @@ class FreshdeskPage_Controller extends Page_Controller
         );
 
         $actions = new FieldList(
-            FormAction::create('Filter', '')->setFullAction('Filter')
+            FormAction::create('Filter', 'Filter')
         );
 
         $form = new Form($this, '', $fields, $actions);
