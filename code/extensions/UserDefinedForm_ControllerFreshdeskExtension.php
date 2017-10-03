@@ -13,6 +13,12 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
             return false;
         }
 
+
+        if (!$emailData['Sender'] instanceof Member) {
+            SS_Log::log("User must be logged in to raise Freshdesk tickets", SS_Log::ERR);
+            return false;
+        }
+
         $formattedData = '';
         foreach ($emailData['Fields'] as $field) {
             $formattedData .= "<p><b>".$field->Title.":</b></p>";

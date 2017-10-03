@@ -19,7 +19,7 @@ Adds two additional fields under `Configuration` on all `UserDefinedForms`:
 * `Export as a Freshdesk ticket on submit` - Set to true to raise the submitted form as a ticket in Freshdesk
 * `Freshdesk ticket description` - Purely cosmetic, you may want to have some sort of landing page for tickets where you show the types and a brief description.
 
-If `Export as a Freshdesk ticket on submit` is set to true and the `FRESHDESK_API_BASEURL` is defined then the form will create a ticket in Freshdesk on submit.
+If `Export as a Freshdesk ticket on submit` is set to true, the `FRESHDESK_API_BASEURL` is defined and the user is logged in then the form will create a ticket in Freshdesk on submit.
 
 ## SSO configuration
 

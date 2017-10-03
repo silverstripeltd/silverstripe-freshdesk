@@ -31,7 +31,7 @@ class FreshdeskAPI extends \Object
             $response = $this->client->send($request, ['json' => $data]);
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
-                SS_Log::log(str($e->getResponse()), SS_Log::ERR);
+                SS_Log::log($e->getMessage(), SS_Log::ERR);
             }
             $response = false;
         }
