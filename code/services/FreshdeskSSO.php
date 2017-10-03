@@ -12,20 +12,23 @@ class FreshdeskSSO extends Controller
 
     public function simpleLogin()
     {
+        if (!defined('FRESHDESK_HMAC_SECRET') && !defined('FRESHDESK_PORTAL_BASEURL'))  {
+            $this->redirect('home/');
+        }
+        
         // Route different Portals - single instance of Freshdesk
         $portalUrl = $this->request->getVar('host_url');
         $freshdeskPortalRedirects = Config::inst()->get('FreshdeskSSO', 'freshdeskPortalRedirects');
 
         if (array_key_exists($portalUrl, $freshdeskPortalRedirects)) {
-            $this->redirect($freshdeskPortalRedirects[$portalUrl]);
+            $this->redirect($freshdeskPortalRedirects[$portalUrl].'/freshdesksso/simpleLogin?host_url='.$portalUrl);
+        } else {
+            $currentMember = \Member::currentUser();
+            if (!$currentMember || !$currentMember->exists()) {
+                return \Security::permissionFailure();
+            }
+            $this->redirect($this->getSSOUrl($currentMember->getName(),$currentMember->Email));
         }
-
-        $currentMember = \Member::currentUser();
-        if (!$currentMember || !$currentMember->exists()) {
-            return \Security::permissionFailure();
-        }
-
-        $this->redirect($this->getSSOUrl($currentMember->getName(),$currentMember->Email));
     }
 
     private function getSSOUrl($strName, $strEmail)
@@ -38,11 +41,18 @@ class FreshdeskSSO extends Controller
 
     public function simpleLogout()
     {
+        // Route different Portals - single instance of Freshdesk
         $portalUrl = $this->request->getVar('host_url');
-        $currentMember = \Member::currentUser();
-        if ($currentMember) {
-            $currentMember->logOut();            
-        }
+        $freshdeskPortalRedirects = Config::inst()->get('FreshdeskSSO', 'freshdeskPortalRedirects');
+
+        if (array_key_exists($portalUrl, $freshdeskPortalRedirects)) {
+            $this->redirect($freshdeskPortalRedirects[$portalUrl].'/freshdesksso/simpleLogout');
+        } else {
+            $currentMember = \Member::currentUser();
+            if ($currentMember) {
+                $currentMember->logOut();            
+            }
         $this->redirect('home/');
+        }
     }
 }
