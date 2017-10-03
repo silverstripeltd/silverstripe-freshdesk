@@ -4,20 +4,25 @@ class FreshdeskSSO extends Controller
 {
 
     public static $allowed_actions = [
-        'simple',
+        'simpleLogin',
+        'simpleLogout',
     ];
 
-    public function simple()
+    private static $freshdeskPortalRedirects = [];
+
+    public function simpleLogin()
     {
+        // Route different Portals - single instance of Freshdesk
+        $portalUrl = $this->request->getVar('host_url');
+        $freshdeskPortalRedirects = Config::inst()->get('FreshdeskSSO', 'freshdeskPortalRedirects');
+
+        if (array_key_exists($portalUrl, $freshdeskPortalRedirects)) {
+            $this->redirect($freshdeskPortalRedirects[$portalUrl]);
+        }
+
         $currentMember = \Member::currentUser();
         if (!$currentMember || !$currentMember->exists()) {
             return \Security::permissionFailure();
-        }
-
-        // Route different Portals - single instance of Freshdesk
-        $portalUrl = $this->request->getVar('host_url');
-        if ($portalUrl != 'cwptest.silverstripe.com') {
-            $this->redirect('https://silverstripesupport.freshdesk.com/login/normal');
         }
 
         $this->redirect($this->getSSOUrl($currentMember->getName(),$currentMember->Email));
@@ -31,4 +36,13 @@ class FreshdeskSSO extends Controller
         return 'http://'.FRESHDESK_PORTAL_BASEURL.'/login/sso/?name='.urlencode($strName).'&email='.urlencode($strEmail).'&timestamp='.$timestamp.'&hash='.$hash;
     }
 
+    public function simpleLogout()
+    {
+        $portalUrl = $this->request->getVar('host_url');
+        $currentMember = \Member::currentUser();
+        if ($currentMember) {
+            $currentMember->logOut();            
+        }
+        $this->redirect('home/');
+    }
 }
