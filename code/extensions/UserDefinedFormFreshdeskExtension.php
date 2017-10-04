@@ -1,6 +1,6 @@
 <?php
 
-Class UserDefinedFormFreshdeskExtension extends DataExtension
+class UserDefinedFormFreshdeskExtension extends DataExtension
 {
     private static $db = [
         "ExportToFreshdesk" => "Boolean",

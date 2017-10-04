@@ -1,6 +1,6 @@
 <?php
 
-Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
+class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 {
     public function updateEmailData($emailData, $attachments)
     {
