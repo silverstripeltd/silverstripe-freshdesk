@@ -20,9 +20,8 @@ class EditableFormFieldFreshdeskExtension extends DataExtension
             return $validationResult->valid();
         }
 
-        $headers = ["Content-type" => "application/json"];
         $freshdesk = \FreshdeskAPI::create();
-        $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields', $headers);
+        $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields');
 
         if ($result && $result->getStatusCode() == '200') {
             $validFields = json_decode($result->getBody()->getContents(), true);

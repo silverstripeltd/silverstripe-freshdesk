@@ -51,8 +51,7 @@ class UserDefinedForm_ControllerFreshdeskExtension extends Extension
             $ticketData['description'] .= "<br>";
         }
 
-        $headers = ["Content-type" => "application/json"];
         $freshdesk = FreshdeskAPI::create();
-        $freshdesk->APICall('POST', FRESHDESK_API_BASEURL, '/api/v2/tickets', $headers, $ticketData);
+        $freshdesk->APICall('POST', FRESHDESK_API_BASEURL, '/api/v2/tickets', $ticketData);
     }
 }

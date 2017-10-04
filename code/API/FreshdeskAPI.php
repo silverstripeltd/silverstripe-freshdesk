@@ -23,7 +23,7 @@ class FreshdeskAPI extends \Object
     * @param String $method, String $url, String $action, Array $headers, Array $data
     * @return $response || false
     */
-    public function APICall($method, $url, $action, $headers, $data = [])
+    public function APICall($method, $url, $action, $data = [], $headers = ["Content-type" => "application/json"])
     {
         $request = new Request($method, 'https://'.$url.$action, $headers);
 
