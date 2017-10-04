@@ -19,14 +19,14 @@ class EditableFormFieldFreshdeskExtension extends DataExtension
         $vaildFieldNames = false;
 
         if ($this->owner->FreshdeskFieldMapping) {
-            if (!$vaildFieldNames) {
-                $headers = ["Content-type" => "application/json"];
-                $freshdesk = \FreshdeskAPI::create();
-                $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields', $headers);
-                if ($result && $result->getStatusCode() == '200') {
-                    $validFields = json_decode($result->getBody()->getContents(), true);
-                }
+            $headers = ["Content-type" => "application/json"];
+            $freshdesk = \FreshdeskAPI::create();
+            $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields', $headers);
+
+            if ($result && $result->getStatusCode() == '200') {
+                $validFields = json_decode($result->getBody()->getContents(), true);
             }
+            
             foreach ($validFields as $field) {
                 if ($field['name'] == $this->owner->FreshdeskFieldMapping) {
                     return $validationResult->valid();
