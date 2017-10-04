@@ -41,15 +41,16 @@ class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 
             if ($mappingField) {
                 if ($isCustomField) {
-                    $ticketData['custom_fields'][$mappingField] = $field->Value;;
-                } else {
-                    $ticketData[$mappingField] = $field->Value;
+                    $ticketData['custom_fields'][$mappingField] = $field->Value;
+                    continue;
                 }
-            } else {
-                $ticketData['description'] .= "<p><b>".$field->Title.":</b></p>";
-                $ticketData['description'] .= "<p>".$field->Value."</p>";
-                $ticketData['description'] .= "<br>";
+                $ticketData[$mappingField] = $field->Value;
+                continue;
             }
+
+            $ticketData['description'] .= "<p><b>".$field->Title.":</b></p>";
+            $ticketData['description'] .= "<p>".$field->Value."</p>";
+            $ticketData['description'] .= "<br>";
         }
 
         $headers = ["Content-type" => "application/json"];
