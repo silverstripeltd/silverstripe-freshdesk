@@ -4,7 +4,7 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 {
     public function updateEmailData($emailData, $attachments)
     {
-        if (!$this->owner->ExportToFreshdesk) {
+         if (!$this->owner->ExportToFreshdesk) {
             return false;
         }
 
@@ -13,18 +13,12 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
             return false;
         }
 
-
         if (!$emailData['Sender'] instanceof Member) {
             SS_Log::log("User must be logged in to raise Freshdesk tickets", SS_Log::ERR);
             return false;
         }
 
-        $formattedData = '';
-        foreach ($emailData['Fields'] as $field) {
-            $formattedData .= "<p><b>".$field->Title.":</b></p>";
-            $formattedData .= "<p>".$field->Value."</p>";
-            $formattedData .= "<br>";
-        }
+        $editableFormFields = $this->owner->Fields();
 
         $productID = null;
         if (defined("FRESHDESK_PRODUCT_ID")) {
@@ -32,13 +26,31 @@ Class UserDefinedForm_ControllerFreshdeskExtension extends Extension
         }
 
         $ticketData = [
-          "description" => $formattedData,
-          "subject" => "[".$this->owner->Title."]",
-          "email" => $emailData['Sender']->Email,
-          "priority" => 2,
-          "status" => 2,
-          "product_id" => $productID,
+            "subject" => "[".$this->owner->Title."]",
+            "email" => $emailData['Sender']->Email,
+            "priority" => 2,
+            "status" => 2,
+            "product_id" => $productID,
+            "description" => '',
         ];
+
+        foreach ($emailData['Fields'] as $field) {
+            $editableFormField = $this->owner->Fields()->find('Name', $field->Name);
+            $mappingField = $editableFormField->FreshdeskFieldMapping;
+            $isCustomField = $editableFormField->FreshdeskFieldCustom;
+
+            if ($mappingField) {
+                if ($isCustomField) {
+                    $ticketData['custom_fields'][$mappingField] = $field->Value;;
+                } else {
+                    $ticketData[$mappingField] = $field->Value;
+                }
+            } else {
+                $ticketData['description'] .= "<p><b>".$field->Title.":</b></p>";
+                $ticketData['description'] .= "<p>".$field->Value."</p>";
+                $ticketData['description'] .= "<br>";
+            }
+        }
 
         $headers = ["Content-type" => "application/json"];
         $freshdesk = FreshdeskAPI::create();

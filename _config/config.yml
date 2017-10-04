@@ -4,6 +4,9 @@ After:
   - 'framework/*'
   - 'cms/*'
 ---
+EditableFormField:
+  extensions:
+    - EditableFormFieldFreshdeskExtension
 UserDefinedForm_Controller:
   extensions:
     - UserDefinedForm_ControllerFreshdeskExtension
