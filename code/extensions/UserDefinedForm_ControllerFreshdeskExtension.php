@@ -18,8 +18,6 @@ class UserDefinedForm_ControllerFreshdeskExtension extends Extension
             return false;
         }
 
-        $editableFormFields = $this->owner->Fields();
-
         $productID = null;
         if (defined("FRESHDESK_PRODUCT_ID")) {
             $productID = FRESHDESK_PRODUCT_ID;
