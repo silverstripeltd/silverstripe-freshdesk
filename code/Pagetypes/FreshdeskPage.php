@@ -166,7 +166,7 @@ class FreshdeskPage_Controller extends Page_Controller
             if (isset($agents->find('AgentId', $ticket['responder_id'])->Name)) {
                 $responder = $agents->find('AgentId', $ticket['responder_id'])->Name;
             } else {
-                $responder = 'Unassigned';
+                $responder = '';
             }
             $status = $statuses->find('StatusId', $ticket['status'])->Name;
             $ticket['priority'] = $priorities[$ticket['priority']];
