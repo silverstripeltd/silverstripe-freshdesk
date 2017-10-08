@@ -37,7 +37,7 @@ class FreshdeskClientFactory implements Factory
             'handler' => $handlerStack,
             'timeout' => 5.0,
             'connect_timeout' => 5.0,
-            'auth' => [FRESHDESK_API_TOKEN, FRESHDESK_PASSWORD],
+            'auth' => [FRESHDESK_API_TOKEN, 'X'],
         ]);
         return $client;
     }

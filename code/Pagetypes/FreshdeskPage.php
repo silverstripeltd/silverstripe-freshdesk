@@ -158,11 +158,20 @@ class FreshdeskPage_Controller extends Page_Controller
     private function humanReadable($tickets)
     {
         $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
-        $statuses = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskStatus');
+        $statuses =  FreshdeskTicketStatuses::get();
+        $agents = FreshdeskAgents::get();
+
         $formattedTickets = [];
         foreach ($tickets as $ticket) {
+            if (isset($agents->find('AgentId', $ticket['responder_id'])->Name)) {
+                $responder = $agents->find('AgentId', $ticket['responder_id'])->Name;
+            } else {
+                $responder = 'Unassigned';
+            }
+            $status = $statuses->find('StatusId', $ticket['status'])->Name;
             $ticket['priority'] = $priorities[$ticket['priority']];
-            $ticket['status'] = $statuses[$ticket['status']];
+            $ticket['status'] = $status;
+            $ticket['responder'] = $responder;
             $formattedTickets[] = $ticket;
         }
         return $formattedTickets;
