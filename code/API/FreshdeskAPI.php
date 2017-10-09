@@ -6,7 +6,7 @@ use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\str;
 use GuzzleHttp\Exception\RequestException;
 
-class Freshdesk extends \Object
+class FreshdeskAPI extends \Object
 {
     /**
      * This is used by the SilverStripe Injector to instantiate an object as $this->client. See _config/config.yml.
@@ -20,10 +20,10 @@ class Freshdesk extends \Object
     /**
     * Generic method to handle requests to the Freshdesk API
     *
-    * @param Array $data, Array $headers, String $method, String $url, String $action
-    * @return Boolean
+    * @param String $method, String $url, String $action, Array $headers, Array $data
+    * @return $response || false
     */
-    public function APICall($data, $headers, $method, $url, $action)
+    public function APICall($method, $url, $action, $data = [], $headers = ["Content-type" => "application/json"])
     {
         $request = new Request($method, 'https://'.$url.$action, $headers);
 
@@ -31,10 +31,10 @@ class Freshdesk extends \Object
             $response = $this->client->send($request, ['json' => $data]);
         } catch (RequestException $e) {
             if ($e->hasResponse()) {
-                SS_Log::log(str($e->getResponse()), SS_Log::ERR);
+                SS_Log::log($e->getMessage(), SS_Log::ERR);
             }
-            return false;
+            $response = false;
         }
-        return true;
+        return $response;
     }
 }
