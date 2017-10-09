@@ -6,11 +6,10 @@ SilverStripe module which allows CMS admins to configure userforms to raise tick
 
 For simple SSO, define in `_ss_environment.php`:
 * `FRESHDESK_HMAC_SECRET` - Optional, required for SSO.
-* `FRESHDESK_PORTAL_BASEURL` - Optiona, required for SSO Base URL of your freshdesk portal (no protocol).
+* `FRESHDESK_PORTAL_BASEURL` - Optional, required for SSO Base URL of your freshdesk portal (no protocol).
 
 For API requests, define in `_ss_environment.php`:
 * `FRESHDESK_API_TOKEN` - API token for an admin account on the Freshdesk.
-* `FRESHDESK_PASSWORD` - Password for the same account.
 * `FRESHDESK_API_BASEURL` - Base URL of your freshdesk account (no protocol).
 * `FRESHDESK_PRODUCT_ID` - Used to log and display tickets from a specific product in your portal.
 
@@ -29,7 +28,7 @@ If `Export as a Freshdesk ticket on submit` is set to true, the `FRESHDESK_API_B
 ## SSO configuration
 
 Currently only the simple sso feature has been enabled. [See Freshdesk documentation for details](https://support.freshdesk.com/support/solutions/articles/31166-single-sign-on-remote-authentication-in-freshdesk)
-To use simple sso, you will need to ensure `FRESHDESK_HMAC_SECRET` and `FRESHDESK_PORTAL_BASEURL` are defined. If you aren't using multiple products/portals in Freshdesk then `FRESHDESK_PORTAL_BASEURL` can me the same as `FRESHDESK_API_BASEURL`.
+To use simple sso, you will need to ensure `FRESHDESK_HMAC_SECRET` and `FRESHDESK_PORTAL_BASEURL` are defined. If you aren't using multiple products/portals in Freshdesk then `FRESHDESK_PORTAL_BASEURL` can be the same as `FRESHDESK_API_BASEURL`.
 
 ### Routing from multiple portals.
 
