@@ -4,6 +4,9 @@ After:
   - 'framework/*'
   - 'cms/*'
 ---
+EditableFormField:
+  extensions:
+    - EditableFormFieldFreshdeskExtension
 UserDefinedForm_Controller:
   extensions:
     - UserDefinedForm_ControllerFreshdeskExtension
@@ -12,4 +15,7 @@ UserDefinedForm:
     - UserDefinedFormFreshdeskExtension
 Injector:
   FreshdeskClient:
-    factory: 'ClientFactory'
+    factory: 'FreshdeskClientFactory'
+Director:
+  rules:
+    'freshdesksso': FreshdeskSSO
