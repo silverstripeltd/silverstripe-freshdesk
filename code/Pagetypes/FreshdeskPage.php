@@ -163,15 +163,27 @@ class FreshdeskPage_Controller extends Page_Controller
 
         $formattedTickets = [];
         foreach ($tickets as $ticket) {
+            $responder = '';
             if (isset($agents->find('AgentId', $ticket['responder_id'])->Name)) {
                 $responder = $agents->find('AgentId', $ticket['responder_id'])->Name;
-            } else {
-                $responder = '';
             }
+
+            $status = '';
+            if (isset($statuses->find('StatusId', $ticket['status'])->Name)) {
+                $status = $statuses->find('StatusId', $ticket['status'])->Name;
+            }
+
+            $stack = '';
+            if (isset($ticket['custom_fields']['stackinstance'])){
+                $stack = $ticket['custom_fields']['stackinstance'];
+            }
+
             $status = $statuses->find('StatusId', $ticket['status'])->Name;
             $ticket['priority'] = $priorities[$ticket['priority']];
             $ticket['status'] = $status;
             $ticket['responder'] = $responder;
+            $ticket['stack'] = $stack;
+
             $formattedTickets[] = $ticket;
         }
         return $formattedTickets;

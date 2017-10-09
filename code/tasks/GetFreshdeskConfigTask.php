@@ -8,19 +8,19 @@ class GetFreshdeskConfigTask extends BuildTask
         $agents = [];
         $freshdesk = \FreshdeskAPI::create();
 
-        $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields?type=default_status');
+        $statusResult = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields?type=default_status');
 
-        if ($result && $result->getStatusCode() == '200') {
-            $ticketFields = json_decode($result->getBody()->getContents(), true);
+        if ($statusResult && $statusResult->getStatusCode() == '200') {
+            $ticketFields = json_decode($statusResult->getBody()->getContents(), true);
 
             foreach ($ticketFields as $ticketField) {
                 $this->doStatuses($ticketField['choices']);
             }
         }
 
-        $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/agents');
+        $agentResult = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/agents');
         
-        if ($result && $result->getStatusCode() == '200') {
+        if ($agentResult && $agentResult->getStatusCode() == '200') {
             $agents = json_decode($result->getBody()->getContents(), true);
             $this->doAgents($agents);
         }
