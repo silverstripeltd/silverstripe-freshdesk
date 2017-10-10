@@ -1,22 +1,18 @@
 <?php
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Exception\RequestException;
 
 class FreshdeskPage extends Page
 {
-
 }
 
 class FreshdeskPage_Controller extends Page_Controller
 {
     /**
-    * Status mapping for Freshdesk tickets
-    * @var Array
-    * @config
-    */
+     * Status mapping for Freshdesk tickets.
+     *
+     * @var array
+     * @config
+     */
     private static $freshdeskStatus = [
         2 => 'open',
         3 => 'pending',
@@ -25,10 +21,11 @@ class FreshdeskPage_Controller extends Page_Controller
     ];
 
     /**
-    * Priority mapping for Freshdesk tickets
-    * @var Array
-    * @config
-    */
+     * Priority mapping for Freshdesk tickets.
+     *
+     * @var array
+     * @config
+     */
     private static $freshdeskPriority = [
         1 => 'low',
         2 => 'medium',
@@ -37,29 +34,9 @@ class FreshdeskPage_Controller extends Page_Controller
     ];
 
     /**
-    * @var Array
-    */
+     * @var array
+     */
     private static $_tickets = [];
-
-    /**
-    * Get tickets from in memory cache, otherwise put them there
-    *
-    * @return Array $_tickets
-    */
-    private function getTickets($currentMember)
-    {
-        if (!self::$_tickets) {
-            $freshdesk = \FreshdeskAPI::create();
-            $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/tickets?email='.urlencode($currentMember->Email));
-
-            $tickets = [];
-            if ($result && $result->getStatusCode() == '200') {
-                $tickets = json_decode($result->getBody()->getContents(), true);
-            }
-            self::$_tickets = $tickets;
-        }
-        return self::$_tickets;
-    }
 
     /*
     * Returns Freshdesk tickets for a user can be filtered by priority or status
@@ -77,12 +54,12 @@ class FreshdeskPage_Controller extends Page_Controller
 
         $tickets = $this->getTickets($currentMember);
 
-        if (empty($tickets) || count($tickets) == 0) {
+        if (empty($tickets) || 0 == count($tickets)) {
             return false;
         }
 
         $productID = false;
-        if (defined("FRESHDESK_PRODUCT_ID")) {
+        if (defined('FRESHDESK_PRODUCT_ID')) {
             $productID = FRESHDESK_PRODUCT_ID;
         }
 
@@ -99,136 +76,27 @@ class FreshdeskPage_Controller extends Page_Controller
         $tickets = $this->freshdeskTicketFilter($tickets, $productID, $filter);
         $tickets = $this->humanReadable($tickets);
         $tickets = new ArrayList($tickets);
+
         return new PaginatedList($tickets, $this->request);
     }
 
     /**
-    * Filters tickets for a user based on product ID or other filter
-    *
-    * @param Array $tickets, String $productID, Array $filter
-    * @return Array $tickets
-    */
-    private function freshdeskTicketFilter($tickets, $productID = false, $filter)
-    {
-        // fast return if nothing to filter on
-        if (!$productID && !$filter) {
-            return $tickets;
-        }
-
-        foreach ($tickets as $key => $val) {
-            if ($productID && $val['product_id'] != $productID) {
-                unset($tickets[$key]);
-                continue;
-            }
-
-            if (empty($filter) || count($filter) == 0) {
-                continue;
-            }
-
-            foreach ($filter as $filterKey => $filterVal) {
-                $doFilter = $this->doFilter($val, $filterKey, $filterVal);
-                if ($doFilter) {
-                    unset($tickets[$key]);
-                }
-            }
-        }
-        return $tickets;
-    }
-
-    /**
-    * Return true or false, depending on if a ticket should be removed based on a match to a filter
-    *
-    * @param Array $ticket, String $filterKey, String $filterVal
-    * @return Boolean
-    */
-    private function doFilter($ticket, $filterKey, $filterVal)
-    {
-        if ($ticket[$filterKey] == (int) $filterVal) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-    * Converts the numeric values in a ticket to something that makes sense to a human. Mappings defined as statics on this class
-    *
-    * @param Array $tickets
-    * @return Array $formattedTickets
-    */
-    private function humanReadable($tickets)
-    {
-        $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
-        $statuses =  FreshdeskTicketStatuses::get();
-        $agents = FreshdeskAgents::get();
-
-        $formattedTickets = [];
-        foreach ($tickets as $ticket) {
-            $responder = '';
-            if (isset($agents->find('AgentId', $ticket['responder_id'])->Name)) {
-                $responder = $agents->find('AgentId', $ticket['responder_id'])->Name;
-            }
-
-            $status = '';
-            if (isset($statuses->find('StatusId', $ticket['status'])->Name)) {
-                $status = $statuses->find('StatusId', $ticket['status'])->Name;
-            }
-
-            $stack = '';
-            if (isset($ticket['custom_fields']['stackinstance'])){
-                $stack = $ticket['custom_fields']['stackinstance'];
-            }
-
-            $status = $statuses->find('StatusId', $ticket['status'])->Name;
-            $ticket['priority'] = $priorities[$ticket['priority']];
-            $ticket['status'] = $status;
-            $ticket['responder'] = $responder;
-            $ticket['stack'] = $stack;
-
-            $formattedTickets[] = $ticket;
-        }
-        return $formattedTickets;
-    }
-
-    /**
-    * Ensures filter only contains allowed statuses and priorities. If unallowed it is unset
-    *
-    * @param Array $filter
-    * @return Array $filter
-    */
-    private function validateFilter($filter)
-    {
-        $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
-        if (isset($filter['priority'])) {
-            if (!in_array($filter['priority'], array_keys($priorities))) {
-                unset($filter['priority']);
-            }
-        }
-
-        $statuses = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskStatus');
-        if (!in_array($filter['status'], array_keys($statuses))) {
-            unset($filter['status']);
-        }
-
-        return $filter;
-    }
-
-    /**
-    * Renders a form which can be used for filtering the tickets via template
-    *
-    * @return Form $form
-    */
+     * Renders a form which can be used for filtering the tickets via template.
+     *
+     * @return Form $form
+     */
     public function filterForm()
     {
         $statuses = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskStatus');
         $currentStatus = 2;
-        if ($this->request->getVar('status') && $this->request->getVar('status') != null) {
+        if ($this->request->getVar('status') && null != $this->request->getVar('status')) {
             $currentStatus = $this->request->getVar('status');
         }
 
         $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
-        $priorities[0] = "any";
+        $priorities[0] = 'any';
         $currentPriority = 0;
-        if ($this->request->getVar('priority') && $this->request->getVar('priority') != null) {
+        if ($this->request->getVar('priority') && null != $this->request->getVar('priority')) {
             $currentPriority = $this->request->getVar('priority');
         }
 
@@ -246,5 +114,149 @@ class FreshdeskPage_Controller extends Page_Controller
         $form->setFormMethod('get');
 
         return $form;
+    }
+
+    /**
+     * Get tickets from in memory cache, otherwise put them there.
+     *
+     * @param mixed $currentMember
+     *
+     * @return array $_tickets
+     */
+    private function getTickets($currentMember)
+    {
+        if (!self::$_tickets) {
+            $freshdesk = \FreshdeskAPI::create();
+            $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/tickets?email='.urlencode($currentMember->Email));
+
+            $tickets = [];
+            if ($result && '200' == $result->getStatusCode()) {
+                $tickets = json_decode($result->getBody()->getContents(), true);
+            }
+            self::$_tickets = $tickets;
+        }
+
+        return self::$_tickets;
+    }
+
+    /**
+     * Filters tickets for a user based on product ID or other filter.
+     *
+     * @param array $tickets,  String $productID, Array $filter
+     * @param mixed $productID
+     * @param mixed $filter
+     *
+     * @return array $tickets
+     */
+    private function freshdeskTicketFilter($tickets, $productID = false, $filter)
+    {
+        // fast return if nothing to filter on
+        if (!$productID && !$filter) {
+            return $tickets;
+        }
+
+        foreach ($tickets as $key => $val) {
+            if ($productID && $val['product_id'] != $productID) {
+                unset($tickets[$key]);
+                continue;
+            }
+
+            if (empty($filter) || 0 == count($filter)) {
+                continue;
+            }
+
+            foreach ($filter as $filterKey => $filterVal) {
+                $doFilter = $this->doFilter($val, $filterKey, $filterVal);
+                if ($doFilter) {
+                    unset($tickets[$key]);
+                }
+            }
+        }
+
+        return $tickets;
+    }
+
+    /**
+     * Return true or false, depending on if a ticket should be removed based on a match to a filter.
+     *
+     * @param array $ticket,   String $filterKey, String $filterVal
+     * @param mixed $filterKey
+     * @param mixed $filterVal
+     *
+     * @return bool
+     */
+    private function doFilter($ticket, $filterKey, $filterVal)
+    {
+        if ($ticket[$filterKey] == (int) $filterVal) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Converts the numeric values in a ticket to something that makes sense to a human. Mappings defined as statics on this class.
+     *
+     * @param array $tickets
+     *
+     * @return array $formattedTickets
+     */
+    private function humanReadable($tickets)
+    {
+        $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
+        $statuses = FreshdeskTicketStatuses::get();
+        $agents = FreshdeskAgents::get();
+
+        $formattedTickets = [];
+        foreach ($tickets as $ticket) {
+            $responder = '';
+            if (isset($agents->find('AgentId', $ticket['responder_id'])->Name)) {
+                $responder = $agents->find('AgentId', $ticket['responder_id'])->Name;
+            }
+
+            $status = '';
+            if (isset($statuses->find('StatusId', $ticket['status'])->Name)) {
+                $status = $statuses->find('StatusId', $ticket['status'])->Name;
+            }
+
+            $stack = '';
+            if (isset($ticket['custom_fields']['stackinstance'])) {
+                $stack = $ticket['custom_fields']['stackinstance'];
+            }
+
+            $status = $statuses->find('StatusId', $ticket['status'])->Name;
+            $ticket['priority'] = $priorities[$ticket['priority']];
+            $ticket['status'] = $status;
+            $ticket['responder'] = $responder;
+            $ticket['stack'] = $stack;
+
+            $formattedTickets[] = $ticket;
+        }
+
+        return $formattedTickets;
+    }
+
+    /**
+     * Ensures filter only contains allowed statuses and priorities. If unallowed it is unset.
+     *
+     * @param array $filter
+     *
+     * @return array $filter
+     */
+    private function validateFilter($filter)
+    {
+        $priorities = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskPriority');
+        if (isset($filter['priority'])) {
+            if (!in_array($filter['priority'], array_keys($priorities))) {
+                unset($filter['priority']);
+            }
+        }
+
+        $statuses = Config::inst()->get('FreshdeskPage_Controller', 'freshdeskStatus');
+        if (!in_array($filter['status'], array_keys($statuses))) {
+            unset($filter['status']);
+        }
+
+        return $filter;
     }
 }

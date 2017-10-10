@@ -2,7 +2,6 @@
 
 class FreshdeskSSO extends Controller
 {
-
     public static $allowed_actions = [
         'simpleLogin',
         'simpleLogout',
@@ -12,10 +11,10 @@ class FreshdeskSSO extends Controller
 
     public function simpleLogin()
     {
-        if (!defined('FRESHDESK_HMAC_SECRET') && !defined('FRESHDESK_PORTAL_BASEURL'))  {
+        if (!defined('FRESHDESK_HMAC_SECRET') && !defined('FRESHDESK_PORTAL_BASEURL')) {
             $this->redirect('home/');
         }
-        
+
         // Route different Portals - single instance of Freshdesk
         $portalUrl = $this->request->getVar('host_url');
         $freshdeskPortalRedirects = Config::inst()->get('FreshdeskSSO', 'freshdeskPortalRedirects');
@@ -27,16 +26,8 @@ class FreshdeskSSO extends Controller
             if (!$currentMember || !$currentMember->exists()) {
                 return \Security::permissionFailure();
             }
-            $this->redirect($this->getSSOUrl($currentMember->getName(),$currentMember->Email));
+            $this->redirect($this->getSSOUrl($currentMember->getName(), $currentMember->Email));
         }
-    }
-
-    private function getSSOUrl($strName, $strEmail)
-    {
-        $timestamp = time();
-        $toBeHashed = $strName . FRESHDESK_HMAC_SECRET . $strEmail . $timestamp;
-        $hash = hash_hmac('md5', $toBeHashed, FRESHDESK_HMAC_SECRET);
-        return 'http://'.FRESHDESK_PORTAL_BASEURL.'/login/sso/?name='.urlencode($strName).'&email='.urlencode($strEmail).'&timestamp='.$timestamp.'&hash='.$hash;
     }
 
     public function simpleLogout()
@@ -50,9 +41,18 @@ class FreshdeskSSO extends Controller
         } else {
             $currentMember = \Member::currentUser();
             if ($currentMember) {
-                $currentMember->logOut();            
+                $currentMember->logOut();
             }
-        $this->redirect('home/');
+            $this->redirect('home/');
         }
+    }
+
+    private function getSSOUrl($strName, $strEmail)
+    {
+        $timestamp = time();
+        $toBeHashed = $strName.FRESHDESK_HMAC_SECRET.$strEmail.$timestamp;
+        $hash = hash_hmac('md5', $toBeHashed, FRESHDESK_HMAC_SECRET);
+
+        return 'http://'.FRESHDESK_PORTAL_BASEURL.'/login/sso/?name='.urlencode($strName).'&email='.urlencode($strEmail).'&timestamp='.$timestamp.'&hash='.$hash;
     }
 }
