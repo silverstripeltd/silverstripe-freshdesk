@@ -1,10 +1,8 @@
 <?php
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Psr7;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\str;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Psr7\Request;
 
 class FreshdeskAPI extends \Object
 {
@@ -18,12 +16,17 @@ class FreshdeskAPI extends \Object
     ];
 
     /**
-    * Generic method to handle requests to the Freshdesk API
-    *
-    * @param String $method, String $url, String $action, Array $headers, Array $data
-    * @return $response || false
-    */
-    public function APICall($method, $url, $action, $data = [], $headers = ["Content-type" => "application/json"])
+     * Generic method to handle requests to the Freshdesk API.
+     *
+     * @param string $method, String $url, String $action, Array $headers, Array $data
+     * @param mixed  $url
+     * @param mixed  $action
+     * @param mixed  $data
+     * @param mixed  $headers
+     *
+     * @return $response || false
+     */
+    public function APICall($method, $url, $action, $data = [], $headers = ['Content-type' => 'application/json'])
     {
         $request = new Request($method, 'https://'.$url.$action, $headers);
 
@@ -35,6 +38,7 @@ class FreshdeskAPI extends \Object
             }
             $response = false;
         }
+
         return $response;
     }
 }
