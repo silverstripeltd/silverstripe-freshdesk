@@ -10,7 +10,7 @@ class GetFreshdeskConfigTask extends BuildTask
 
         $statusResult = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields?type=default_status');
 
-        if ($statusResult && $statusResult->getStatusCode() == '200') {
+        if ($statusResult && '200' == $statusResult->getStatusCode()) {
             $ticketFields = json_decode($statusResult->getBody()->getContents(), true);
 
             foreach ($ticketFields as $ticketField) {
@@ -19,8 +19,8 @@ class GetFreshdeskConfigTask extends BuildTask
         }
 
         $agentResult = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/agents');
-        
-        if ($agentResult && $agentResult->getStatusCode() == '200') {
+
+        if ($agentResult && '200' == $agentResult->getStatusCode()) {
             $agents = json_decode($result->getBody()->getContents(), true);
             $this->doAgents($agents);
         }
@@ -28,26 +28,26 @@ class GetFreshdeskConfigTask extends BuildTask
 
     private function doStatuses($statuses)
     {
-        $existing =  FreshdeskTicketStatuses::get();
-        
+        $existing = FreshdeskTicketStatuses::get();
+
         $updated = 0;
         $created = 0;
 
-        foreach ($statuses as $id=>$status) {
+        foreach ($statuses as $id => $status) {
             $search = $existing->find('StatusId', $id);
 
             if ($search) {
                 if ($search->Name != $status[0]) {
                     $search->Name = $status[0];
                     $search->write();
-                    $updated ++;
+                    ++$updated ;
                 }
             } else {
                 $newStatus = new FreshdeskTicketStatuses();
                 $newStatus->StatusId = $id;
                 $newStatus->Name = $status[0];
                 $newStatus->write();
-                $created ++;    
+                ++$created ;
             }
         }
         $this->log("$updated Statuses updated, $created Statuses created.");
@@ -55,7 +55,7 @@ class GetFreshdeskConfigTask extends BuildTask
 
     private function doAgents($agents)
     {
-        $existing =  FreshdeskAgents::get();
+        $existing = FreshdeskAgents::get();
 
         $updated = 0;
         $created = 0;
@@ -64,17 +64,17 @@ class GetFreshdeskConfigTask extends BuildTask
             $search = $existing->find('AgentId', $agent['id']);
 
             if ($search) {
-                if ($search->Name != $agent['contact']['name']) {
+                if ($agent['contact']['name'] != $search->Name) {
                     $search->Name = $agent['contact']['name'];
                     $search->write();
-                    $updated ++;
+                    ++$updated ;
                 }
             } else {
                 $newAgent = new FreshdeskAgents();
                 $newAgent->AgentId = $agent['id'];
                 $newAgent->Name = $agent['contact']['name'];
                 $newAgent->write();
-                $created ++;
+                ++$created ;
             }
         }
         $this->log("$updated Agents updated, $created Agents created.");

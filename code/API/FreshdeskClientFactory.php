@@ -10,6 +10,7 @@ use SilverStripe\Framework\Injector\Factory;
 class FreshdeskClientFactory implements Factory
 {
     const maxRetries = 5;
+
     public function create($service, array $params = [])
     {
         $handlerStack = HandlerStack::create(new CurlHandler());
@@ -26,6 +27,7 @@ class FreshdeskClientFactory implements Factory
                 if ($response && $response->getStatusCode() >= 500) {
                     return true;
                 }
+
                 return false;
             },
             function ($retries) {
@@ -39,6 +41,7 @@ class FreshdeskClientFactory implements Factory
             'connect_timeout' => 5.0,
             'auth' => [FRESHDESK_API_TOKEN, 'X'],
         ]);
+
         return $client;
     }
 }
