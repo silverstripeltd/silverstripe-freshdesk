@@ -13,9 +13,6 @@ UserDefinedForm_Controller:
 UserDefinedForm:
   extensions:
     - UserDefinedFormFreshdeskExtension
-Injector:
-  FreshdeskClient:
-    factory: 'FreshdeskClientFactory'
 Director:
   rules:
     'freshdesksso': FreshdeskSSO

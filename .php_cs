@@ -14,6 +14,7 @@ return PhpCsFixer\Config::create()
         'phpdoc_add_missing_param_annotation' => true,
         'phpdoc_order' => true,
         'semicolon_after_instruction' => true,
+        'yoda_style' => false,
     ])
     ->setFinder(
         PhpCsFixer\Finder::create()

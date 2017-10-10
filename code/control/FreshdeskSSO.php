@@ -11,8 +11,8 @@ class FreshdeskSSO extends Controller
 
     public function simpleLogin()
     {
-        if (!defined('FRESHDESK_HMAC_SECRET') && !defined('FRESHDESK_PORTAL_BASEURL')) {
-            $this->redirect('home/');
+        if (!defined('FRESHDESK_HMAC_SECRET') || !defined('FRESHDESK_PORTAL_BASEURL')) {
+            $this->redirect('/');
         }
 
         // Route different Portals - single instance of Freshdesk
@@ -53,6 +53,6 @@ class FreshdeskSSO extends Controller
         $toBeHashed = $strName.FRESHDESK_HMAC_SECRET.$strEmail.$timestamp;
         $hash = hash_hmac('md5', $toBeHashed, FRESHDESK_HMAC_SECRET);
 
-        return 'http://'.FRESHDESK_PORTAL_BASEURL.'/login/sso/?name='.urlencode($strName).'&email='.urlencode($strEmail).'&timestamp='.$timestamp.'&hash='.$hash;
+        return sprintf('http://%s/login/sso/?name=%s&email=%s&timestamp=%s&hash=%s', FRESHDESK_PORTAL_BASEURL, urlencode($strName), urlencode($strEmail), $timestamp, $hash);
     }
 }

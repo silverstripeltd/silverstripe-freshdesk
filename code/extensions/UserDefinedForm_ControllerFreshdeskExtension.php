@@ -2,15 +2,18 @@
 
 class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 {
+    /**
+     * @var FreshdeskAPI
+     */
+    public $freshdesk;
+
+    private static $dependencies = [
+        'freshdesk' => '%$FreshdeskAPI',
+    ];
+
     public function updateEmailData($emailData, $attachments)
     {
         if (!$this->owner->ExportToFreshdesk) {
-            return false;
-        }
-
-        if (!defined('FRESHDESK_API_BASEURL') || empty('FRESHDESK_API_BASEURL')) {
-            SS_Log::log('Ticket is intended to be exported to Freshdesk but FRESHDESK_API_BASEURL is not defined', SS_Log::ERR);
-
             return false;
         }
 
@@ -26,7 +29,7 @@ class UserDefinedForm_ControllerFreshdeskExtension extends Extension
         }
 
         $ticketData = [
-            'subject' => '['.$this->owner->Title.']',
+            'subject' => $this->owner->Title,
             'email' => $emailData['Sender']->Email,
             'priority' => 2,
             'status' => 2,
@@ -38,8 +41,12 @@ class UserDefinedForm_ControllerFreshdeskExtension extends Extension
             $editableFormField = $this->owner->Fields()->find('Name', $field->Name);
             $mappingField = $editableFormField->FreshdeskFieldMapping;
             $isCustomField = $editableFormField->FreshdeskFieldCustom;
+            $forceInteger = $editableFormField->FreshdeskForceInt;
 
             if ($mappingField) {
+                if ($forceInteger) {
+                    $field->Value = (int) $field->Value;
+                }
                 if ($isCustomField) {
                     $ticketData['custom_fields'][$mappingField] = $field->Value;
                     continue;
@@ -48,12 +55,15 @@ class UserDefinedForm_ControllerFreshdeskExtension extends Extension
                 continue;
             }
 
+            if ($field->Value == '') {
+                continue;
+            }
+
             $ticketData['description'] .= '<p><b>'.$field->Title.':</b></p>';
             $ticketData['description'] .= '<p>'.$field->Value.'</p>';
             $ticketData['description'] .= '<br>';
         }
 
-        $freshdesk = FreshdeskAPI::create();
-        $freshdesk->APICall('POST', FRESHDESK_API_BASEURL, '/api/v2/tickets', $ticketData);
+        $this->freshdesk->makeTicket($ticketData);
     }
 }
