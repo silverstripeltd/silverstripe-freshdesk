@@ -3,19 +3,21 @@
 class EditableFormFieldFreshdeskExtension extends DataExtension
 {
     private static $db = [
-        "FreshdeskFieldMapping" => "Text",
-        "FreshdeskFieldCustom" => "Boolean",
+        'FreshdeskFieldMapping' => 'Text',
+        'FreshdeskFieldCustom' => 'Boolean',
     ];
 
-    public function updateCMSFields(FieldList $fields) {
-        $fields->addFieldToTab('Root.Main', new TextField('FreshdeskFieldMapping', 'Freshdesk field mapping:'));        
+    public function updateCMSFields(FieldList $fields)
+    {
+        $fields->addFieldToTab('Root.Main', new TextField('FreshdeskFieldMapping', 'Freshdesk field mapping:'));
         $fields->addFieldToTab('Root.Main', new CheckboxField('FreshdeskFieldCustom', 'Freshdesk custom field'));
     }
 
     /*
     * Ensure Freshdesk fields exist via API call
     */
-    public function validate(ValidationResult $validationResult) {
+    public function validate(ValidationResult $validationResult)
+    {
         if (!$this->owner->FreshdeskFieldMapping) {
             return $validationResult->valid();
         }
@@ -23,7 +25,7 @@ class EditableFormFieldFreshdeskExtension extends DataExtension
         $freshdesk = \FreshdeskAPI::create();
         $result = $freshdesk->APICall('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields');
 
-        if ($result && $result->getStatusCode() == '200') {
+        if ($result && '200' == $result->getStatusCode()) {
             $validFields = json_decode($result->getBody()->getContents(), true);
         }
 
@@ -32,6 +34,7 @@ class EditableFormFieldFreshdeskExtension extends DataExtension
                 return $validationResult->valid();
             }
         }
-        return $validationResult->error($this->owner->FreshdeskFieldMapping . ' is not a valid Freshdesk field');
+
+        return $validationResult->error($this->owner->FreshdeskFieldMapping.' is not a valid Freshdesk field');
     }
 }
