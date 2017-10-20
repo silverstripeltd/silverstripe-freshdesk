@@ -1,0 +1,18 @@
+---
+Name: freshdesk
+After:
+  - 'framework/*'
+  - 'cms/*'
+---
+EditableFormField:
+  extensions:
+    - EditableFormFieldFreshdeskExtension
+UserDefinedForm_Controller:
+  extensions:
+    - UserDefinedForm_ControllerFreshdeskExtension
+UserDefinedForm:
+  extensions:
+    - UserDefinedFormFreshdeskExtension
+Director:
+  rules:
+    'freshdesksso': FreshdeskSSO
