@@ -43,9 +43,6 @@ class FreshdeskAPI extends \Object
     public function __construct()
     {
         $this->client = $this->createClient();
-        if (!defined('FRESHDESK_API_BASEURL') || empty('FRESHDESK_API_BASEURL')) {
-            throw new Exception('FRESHDESK_API_BASEURL must be defined', 1);
-        }
     }
 
     /**
