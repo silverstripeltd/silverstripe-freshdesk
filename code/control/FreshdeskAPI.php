@@ -43,9 +43,11 @@ class FreshdeskAPI extends \Object
     public function __construct()
     {
         $this->client = $this->createClient();
-        if (!defined('FRESHDESK_API_BASEURL') || empty('FRESHDESK_API_BASEURL')) {
-            throw new Exception('FRESHDESK_API_BASEURL must be defined', 1);
-        }
+    }
+
+    public function enabled()
+    {
+        return defined('FRESHDESK_API_BASEURL') && defined('FRESHDESK_API_TOKEN');
     }
 
     /**
@@ -59,6 +61,10 @@ class FreshdeskAPI extends \Object
     {
         if (self::$_tickets) {
             return self::$_tickets;
+        }
+
+        if (!$this->enabled()) {
+            return null;
         }
 
         if (!$this->checkValidUser($currentMember)) {
@@ -106,6 +112,10 @@ class FreshdeskAPI extends \Object
             return self::$_agents;
         }
 
+        if (!$this->enabled()) {
+            return null;
+        }
+
         $agentResult = $this->call('GET', FRESHDESK_API_BASEURL, '/api/v2/agents');
 
         $agents = [];
@@ -134,6 +144,10 @@ class FreshdeskAPI extends \Object
             return self::$_statuses;
         }
 
+        if (!$this->enabled()) {
+            return null;
+        }
+
         $statusResult = $this->call('GET', FRESHDESK_API_BASEURL, '/api/v2/ticket_fields?type=default_status');
 
         $statuses = [];
@@ -157,6 +171,10 @@ class FreshdeskAPI extends \Object
      */
     public function createClient()
     {
+        if (!$this->enabled()) {
+            return null;
+        }
+
         $handlerStack = HandlerStack::create(new CurlHandler());
         // setup a retry functionality that will retry the request self::maxRetries for connection errors and 500 status code
         // errors. This will by default have an exponential back-off (sleep) between retries calculated as pow(2, $retries - 1);
