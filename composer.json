@@ -1,5 +1,5 @@
 {
-    "name": "jakedaleweb/silverstripe-freshdesk",
+    "name": "silverstripeltd/silverstripe-freshdesk",
     "description": "Additional feature for userdefined forms to raise freshdesk tickets",
     "type": "silverstripe-module",
     "require": {
