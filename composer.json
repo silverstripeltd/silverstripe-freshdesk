@@ -4,7 +4,7 @@
     "type": "silverstripe-module",
     "require": {
         "guzzlehttp/guzzle": "~6.0",
-        "silverstripe/userforms": "4.3.1@stable",
+        "silverstripe/userforms": "^4.3.1",
         "silverstripe/framework": "~3.6",
         "silverstripe/cms": "~3.6"
     }
