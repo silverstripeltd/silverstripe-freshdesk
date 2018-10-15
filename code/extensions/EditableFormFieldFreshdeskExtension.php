@@ -3,12 +3,12 @@
 class EditableFormFieldFreshdeskExtension extends DataExtension
 {
     /**
-     * @var FreshdeskAPI
+     * @var FreshdeskService
      */
-    public $freshdesk;
+    public $freshdeskService;
 
     private static $dependencies = [
-        'freshdesk' => '%$FreshdeskAPI',
+        'freshdeskService' => '%$FreshdeskService',
     ];
 
     private static $db = [
@@ -33,7 +33,7 @@ class EditableFormFieldFreshdeskExtension extends DataExtension
             return $validationResult->valid();
         }
 
-        $validFields = $this->freshdesk->getFieldMappings();
+        $validFields = $this->freshdeskService->getFieldMappings();
 
         foreach ($validFields as $field) {
             if ($field['name'] == $this->owner->FreshdeskFieldMapping) {
@@ -41,6 +41,6 @@ class EditableFormFieldFreshdeskExtension extends DataExtension
             }
         }
 
-        return $validationResult->error($this->owner->FreshdeskFieldMapping.' is not a valid Freshdesk field');
+        return $validationResult->error(sprintf('%s is not a valid Freshdesk field', $this->owner->FreshdeskFieldMapping));
     }
 }

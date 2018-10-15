@@ -3,12 +3,12 @@
 class UserDefinedForm_ControllerFreshdeskExtension extends Extension
 {
     /**
-     * @var FreshdeskAPI
+     * @var FreshdeskService
      */
-    public $freshdesk;
+    public $freshdeskService;
 
     private static $dependencies = [
-        'freshdesk' => '%$FreshdeskAPI',
+        'freshdeskService' => '%$FreshdeskService',
     ];
 
     public function updateEmailData($emailData, $attachments)
@@ -55,7 +55,7 @@ class UserDefinedForm_ControllerFreshdeskExtension extends Extension
                 continue;
             }
 
-            if ($field->Value == '') {
+            if (!$field->Value) {
                 continue;
             }
 
@@ -64,6 +64,6 @@ class UserDefinedForm_ControllerFreshdeskExtension extends Extension
             $ticketData['description'] .= '<br>';
         }
 
-        $this->freshdesk->makeTicket($ticketData);
+        $this->freshdeskService->makeTicket($ticketData);
     }
 }
