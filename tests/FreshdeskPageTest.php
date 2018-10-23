@@ -2,63 +2,78 @@
 
 class FreshdeskPageTest extends SapphireTest
 {
-    public $mockAPI;
-
-    public $page;
     protected $usesDatabase = true;
+
+    private $page;
+
+    private $mockService;
 
     public function setUp()
     {
         parent::setUp();
-        $this->mockAPI = new MockAPI();
 
         Injector::nest();
-        Injector::inst()->registerService($this->mockAPI, 'FreshdeskAPI');
 
+        $this->mockService = $this->getMock('FreshdeskService', [
+            'getUserTickets',
+            'getStatuses',
+        ]);
+
+        Injector::inst()->registerService($this->mockService, 'FreshdeskService');
         $this->page = FreshdeskPage_Controller::create();
     }
 
     public function tearDown()
     {
         Injector::unnest();
+
+        parent::tearDown();
     }
 
     public function testFiltering()
     {
-        $this->setUp();
+        $this->logInWithPermission('ADMIN');
 
-        $filter = [
-            'priority' => 'medium',
-            'status' => 'Open',
-        ];
-        $tickets1 = $this->page->getTickets($filter);
+        $this->mockService->expects($this->any())
+            ->method('getUserTickets')
+            ->will($this->returnValue([
+                ['status' => 'Pending', 'priority' => 'urgent'],
+                ['status' => 'Open', 'priority' => 'urgent'],
+                ['status' => 'Pending', 'priority' => 'urgent'],
+                ['status' => 'Resolved', 'priority' => 'urgent'],
+                ['status' => 'Pending', 'priority' => 'medium'],
+                ['status' => 'Open', 'priority' => 'urgent'],
+                ['status' => 'Pending', 'priority' => 'urgent'],
+                ['status' => 'Resolved', 'priority' => 'urgent'],
+                ['status' => 'Open', 'priority' => 'medium'],
+                ['status' => 'Open', 'priority' => 'medium'],
+                ['status' => 'Open', 'priority' => 'medium'],
+                ['status' => 'Open', 'priority' => 'medium'],
+                ['status' => 'Open', 'priority' => 'medium'],
+                ['status' => 'Open', 'priority' => 'medium'],
+            ]));
+
+        $this->mockService->expects($this->once())
+            ->method('getStatuses')
+            ->will($this->returnValue([
+                'Open',
+                'Resolved',
+                'Pending',
+            ]));
+
+        $tickets1 = $this->page->getTickets(['priority' => 'medium', 'status' => 'Open']);
         $this->assertEquals(6, count($tickets1));
 
-        $filter = [
-            'priority' => 'medium',
-        ];
-        $tickets2 = $this->page->getTickets($filter);
+        $tickets2 = $this->page->getTickets(['priority' => 'medium']);
         $this->assertEquals(7, count($tickets2));
 
-        $filter = [
-            'status' => 'Pending',
-        ];
-        $tickets3 = $this->page->getTickets($filter);
+        $tickets3 = $this->page->getTickets(['status' => 'Pending']);
         $this->assertEquals(4, count($tickets3));
 
-        $filter = [
-            'status' => 'banana',
-        ];
-        $tickets4 = $this->page->getTickets($filter);
+        $tickets4 = $this->page->getTickets(['status' => 'banana']);
         $this->assertEquals(14, count($tickets4));
 
-        $filter = [
-            'priority' => 'medium',
-            'status' => 'any',
-        ];
-        $tickets5 = $this->page->getTickets($filter);
+        $tickets5 = $this->page->getTickets(['priority' => 'medium', 'status' => 'any']);
         $this->assertEquals(7, count($tickets5));
-
-        $this->tearDown();
     }
 }

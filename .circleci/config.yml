@@ -1,0 +1,94 @@
+version: 2
+jobs:
+  build:
+    working_directory: /home/circleci/silverstripeltd/silverstripe-freshdesk
+    parallelism: 1
+    shell: /bin/bash --login
+    docker:
+      - image: silverstripe/dashboard-ci:latest
+    steps:
+      - checkout
+      - run: git clone git://github.com/silverstripe-labs/silverstripe-travis-support.git ~/travis-support
+      - run: env CORE_RELEASE=3.6 TRAVIS_BRANCH="$CIRCLE_BRANCH" TRAVIS_COMMIT="$CIRCLE_SHA1" php ~/travis-support/travis_setup.php --source `pwd` --target /home/circleci/silverstripeltd/build
+      - persist_to_workspace:
+          root: /home/circleci/silverstripeltd
+          paths:
+            - build
+
+  tests:
+    working_directory: /home/circleci/silverstripeltd/build
+    parallelism: 1
+    shell: /bin/bash --login
+    docker:
+      - image: silverstripe/dashboard-ci:latest
+      - image: circleci/mysql:5.7
+        environment:
+          - MYSQL_ROOT_PASSWORD=ubuntu
+          - MYSQL_DATABASE=circle_test
+          - MYSQL_HOST=127.0.0.1
+    steps:
+      - attach_workspace:
+          at: /home/circleci/silverstripeltd
+      - run: |
+          sudo /bin/bash -c 'echo "memory_limit = 256M" > /usr/local/etc/php/conf.d/circle.ini'
+          sudo /bin/bash -c 'echo "date.timezone = Pacific/Auckland" >> /usr/local/etc/php/conf.d/circle.ini'
+          sudo rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - run: |
+          cat << 'EOF' > mysite.conf
+          Listen 8080
+          <VirtualHost *:8080>
+            DocumentRoot /home/circleci/silverstripeltd/build
+            ServerName localhost
+            <Directory /home/circleci/silverstripeltd/build>
+              AllowOverride All
+              Require all granted
+            </Directory>
+          </VirtualHost>
+          EOF
+      - run: sudo mv mysite.conf /etc/apache2/sites-available/mysite.conf
+      - run: sudo a2ensite mysite.conf
+      - run: sudo a2enmod rewrite
+      - run: sudo service apache2 restart
+      - run: mkdir -p assets
+      - run: chmod 777 assets
+      - run: |
+          cat << 'EOF' > _ss_environment.php
+          <?php
+          define('SS_DATABASE_USERNAME', 'root');
+          define('SS_DATABASE_PASSWORD', 'ubuntu');
+          define('SS_DATABASE_NAME', 'circle_test');
+          define('SS_DATABASE_SERVER', '127.0.0.1');
+          define('SS_DATABASE_CLASS', 'MySQLDatabase');
+          define('SS_ENVIRONMENT_TYPE', 'dev');
+          global $_FILE_TO_URL_MAPPING;
+          $_FILE_TO_URL_MAPPING['/home/circleci/silverstripeltd/build'] = 'http://localhost';
+          EOF
+          chmod -R +x /home/circleci/silverstripeltd
+          sudo usermod -a -G circleci www-data
+      - run: until nc -z -v -w30 127.0.0.1 3306; do sleep 1; done
+      - run: vendor/bin/phpunit freshdesk/tests
+
+  php-cs:
+    working_directory: /home/circleci/silverstripeltd/build
+    parallelism: 1
+    shell: /bin/bash --login
+    docker:
+      - image: silverstripe/dashboard-ci:latest
+    steps:
+      - attach_workspace:
+          at: /home/circleci/silverstripeltd
+      - run: sudo rm /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - run: vendor/bin/php-cs-fixer fix freshdesk -v --dry-run --stop-on-violation --using-cache=no
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - tests:
+          requires:
+            - build
+      - php-cs:
+          requires:
+            - build
+

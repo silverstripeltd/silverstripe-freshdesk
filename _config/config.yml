@@ -15,4 +15,4 @@ UserDefinedForm:
     - UserDefinedFormFreshdeskExtension
 Director:
   rules:
-    'freshdesksso': FreshdeskSSO
+    'freshdesksso': FreshdeskSsoController
