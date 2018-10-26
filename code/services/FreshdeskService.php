@@ -2,7 +2,7 @@
 
 use Freshdesk\Api;
 
-class FreshdeskService extends \Object
+class FreshdeskService extends Object
 {
     /**
      * @var null|Api
@@ -21,14 +21,29 @@ class FreshdeskService extends \Object
         'urgent',
     ];
 
+    /**
+     * @var null|string
+     * @config
+     */
+    private static $domain;
+
+    /**
+     * @var null|string
+     * @config
+     */
+    private static $token;
+
     public function __construct()
     {
         $this->client = $this->createApi();
     }
 
+    /**
+     * @return bool
+     */
     public function enabled()
     {
-        return defined('FRESHDESK_DOMAIN') && defined('FRESHDESK_TOKEN');
+        return $this->config()->domain && $this->config()->token;
     }
 
     /**
@@ -113,7 +128,7 @@ class FreshdeskService extends \Object
             return null;
         }
 
-        return new Api(FRESHDESK_TOKEN, FRESHDESK_DOMAIN);
+        return new Api($this->config()->token, $this->config()->domain);
     }
 
     /**

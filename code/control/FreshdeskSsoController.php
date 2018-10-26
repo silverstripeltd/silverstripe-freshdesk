@@ -2,17 +2,53 @@
 
 class FreshdeskSsoController extends Controller
 {
+    /**
+     * @var FreshdeskAuditLogger
+     */
+    public $logger;
+
+    /**
+     * @var array
+     */
+    private static $dependencies = [
+        'logger' => '%$FreshdeskAuditLogger',
+    ];
+
+    /**
+     * @var array
+     */
     private static $allowed_actions = [
         'simplelogin',
         'simplelogout',
     ];
 
+    /**
+     * @var null|string
+     * @config
+     */
+    private static $hmac_secret;
+
+    /**
+     * @var null|string
+     * @config
+     */
+    private static $domain;
+
+    /**
+     * @var null|string
+     * @config
+     */
+    private static $portal_hostname;
+
+    /**
+     * @var array
+     */
     private static $freshdeskPortalRedirects = [];
 
     public function simplelogin()
     {
         if (!$this->enabled()) {
-            $this->redirect('/');
+            return $this->redirect('/');
         }
 
         // Route different Portals - single instance of Freshdesk
@@ -26,6 +62,9 @@ class FreshdeskSsoController extends Controller
             if (!$member || !$member->exists()) {
                 return Security::permissionFailure();
             }
+
+            $this->logger->info(sprintf('%s authorised Freshdesk Simple SSO login request', $member->Email));
+
             $this->redirect($this->getSSOUrl($member->getName(), $member->Email));
         }
     }
@@ -33,7 +72,7 @@ class FreshdeskSsoController extends Controller
     public function simplelogout()
     {
         if (!$this->enabled()) {
-            $this->redirect('/');
+            return $this->redirect('/');
         }
 
         // Route different Portals - single instance of Freshdesk
@@ -47,13 +86,16 @@ class FreshdeskSsoController extends Controller
             if ($member) {
                 $member->logOut();
             }
+
+            $this->logger->info(sprintf('%s authorised Freshdesk Simple SSO logout request', $member->Email));
+
             $this->redirect('/');
         }
     }
 
     private function enabled()
     {
-        if (defined('FRESHDESK_HMAC_SECRET') && (defined('FRESHDESK_DOMAIN') || defined('FRESHDESK_PORTAL_HOSTNAME'))) {
+        if ($this->config()->hmac_secret && ($this->config()->domain || $this->config()->portal_hostname)) {
             return true;
         }
 
@@ -62,12 +104,10 @@ class FreshdeskSsoController extends Controller
 
     private function getSSOUrl($name, $email)
     {
-        $timestamp = time();
-        $toBeHashed = $name.FRESHDESK_HMAC_SECRET.$email.$timestamp;
-        $hash = hash_hmac('md5', $toBeHashed, FRESHDESK_HMAC_SECRET);
-        $host = defined('FRESHDESK_PORTAL_HOSTNAME')
-            ? FRESHDESK_PORTAL_HOSTNAME
-            : sprintf('%s.freshdesk.com', FRESHDESK_DOMAIN);
+        $timestamp = SS_Datetime::now()->Format('U');
+        $value = sprintf('%s%s%s%s', $name, $this->config()->hmac_secret, $email, $timestamp);
+        $hash = hash_hmac('md5', $value, $this->config()->hmac_secret);
+        $host = $this->config()->portal_hostname ?: sprintf('%s.freshdesk.com', $this->config()->domain);
 
         return sprintf(
             'https://%s/login/sso/?name=%s&email=%s&timestamp=%s&hash=%s',
