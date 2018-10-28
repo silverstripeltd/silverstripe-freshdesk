@@ -84,10 +84,9 @@ class FreshdeskSsoController extends Controller
         } else {
             $member = Member::currentUser();
             if ($member) {
+                $this->logger->info(sprintf('%s authorised Freshdesk Simple SSO logout request', $member->Email));
                 $member->logOut();
             }
-
-            $this->logger->info(sprintf('%s authorised Freshdesk Simple SSO logout request', $member->Email));
 
             $this->redirect('/');
         }
