@@ -16,3 +16,6 @@ UserDefinedForm:
 Director:
   rules:
     'freshdesksso': FreshdeskSsoController
+Injector:
+  FreshdeskAuditLogger:
+    factory: 'SilverStripe\Freshdesk\LogFactory'
