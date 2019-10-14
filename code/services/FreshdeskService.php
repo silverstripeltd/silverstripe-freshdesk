@@ -2,7 +2,7 @@
 
 use Freshdesk\Api;
 
-class FreshdeskService extends Object
+class FreshdeskService extends SS_Object
 {
     /**
      * @var null|Api
